@@ -2,6 +2,8 @@ package core
 
 import "sort"
 
+const FileSignature = "HUF"
+
 type CodeInfo struct {
 	Char byte
 	Len  uint8
@@ -25,17 +27,9 @@ func getLengths(node *Node, length uint8, lengths map[byte]uint8) {
 	getLengths(node.Right, length+1, lengths)
 }
 
-func BuildCanonicalCodes(root *Node) []CodeInfo {
-	lengthsMap := make(map[byte]uint8)
-	getLengths(root, 0, lengthsMap)
-
-	if len(lengthsMap) == 0 {
-		return nil
-	}
-
-	codes := make([]CodeInfo, 0, len(lengthsMap))
-	for char, length := range lengthsMap {
-		codes = append(codes, CodeInfo{Char: char, Len: length})
+func assignCodes(codes []CodeInfo) {
+	if len(codes) == 0 {
+		return
 	}
 
 	sort.Slice(codes, func(i, j int) bool {
@@ -54,11 +48,33 @@ func BuildCanonicalCodes(root *Node) []CodeInfo {
 		}
 		codes[i].Code = code
 	}
+}
+
+func BuildCanonicalCodes(root *Node) []CodeInfo {
+	lengthsMap := make(map[byte]uint8)
+	getLengths(root, 0, lengthsMap)
+
+	if len(lengthsMap) == 0 {
+		return nil
+	}
+
+	codes := make([]CodeInfo, 0, len(lengthsMap))
+	for char, length := range lengthsMap {
+		codes = append(codes, CodeInfo{Char: char, Len: length})
+	}
+
+	assignCodes(codes)
 
 	return codes
 }
 
-func BuildDecocingTree(codes []CodeInfo) *Node {
+func BuildDecodingTree(codes []CodeInfo) *Node {
+	if len(codes) == 0 {
+		return nil
+	}
+
+	assignCodes(codes)
+
 	root := &Node{}
 	for _, ci := range codes {
 		node := root
