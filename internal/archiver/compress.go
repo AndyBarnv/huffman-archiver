@@ -8,15 +8,23 @@ import (
 	"io"
 )
 
-func Compress(input io.Reader, output io.Writer) error {
-	data, err := io.ReadAll(input)
-	if err != nil {
-		return err
-	}
-
+func Compress(input io.ReadSeeker, output io.Writer) error {
+	buf := make([]byte, 32*1024)
 	freq := make(map[byte]uint64)
-	for _, b := range data {
-		freq[b]++
+	dataSize := uint64(0)
+
+	for {
+		n, err := input.Read(buf)
+		for i := 0; i < n; i++ {
+			freq[buf[i]]++
+			dataSize++
+		}
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
 	}
 
 	tree := core.BuildTree(freq)
@@ -29,15 +37,19 @@ func Compress(input io.Reader, output io.Writer) error {
 		return err
 	}
 
-	buf8 := make([]byte, 8)
-	binary.LittleEndian.PutUint64(buf8, uint64(len(data)))
-	if _, err := bufWriter.Write(buf8); err != nil {
+	sizeBuf := make([]byte, 8)
+	binary.LittleEndian.PutUint64(sizeBuf, dataSize)
+	if _, err := bufWriter.Write(sizeBuf); err != nil {
 		return err
 	}
 
-	buf2 := make([]byte, 2)
-	binary.LittleEndian.PutUint16(buf2, uint16(len(codes)))
-	if _, err := bufWriter.Write(buf2); err != nil {
+	codesNumBuf := make([]byte, 2)
+	binary.LittleEndian.PutUint16(codesNumBuf, uint16(len(codes)))
+	if _, err := bufWriter.Write(codesNumBuf); err != nil {
+		return err
+	}
+
+	if _, err := input.Seek(0, io.SeekStart); err != nil {
 		return err
 	}
 
@@ -53,13 +65,22 @@ func Compress(input io.Reader, output io.Writer) error {
 	}
 
 	writer := bitio.NewBitWriter(bufWriter)
-	for _, b := range data {
-		ci := codeMap[b]
-		for i := uint8(0); i < ci.Len; i++ {
-			bit := (ci.Code >> (ci.Len - 1 - i)) & 1
-			if err := writer.WriteBit(bit == 1); err != nil {
-				return err
+	for {
+		n, err := input.Read(buf)
+		for i := 0; i < n; i++ {
+			ci := codeMap[buf[i]]
+			for j := uint8(0); j < ci.Len; j++ {
+				bit := (ci.Code >> (ci.Len - 1 - j)) & 1
+				if err := writer.WriteBit(bit == 1); err != nil {
+					return err
+				}
 			}
+		}
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
 		}
 	}
 
