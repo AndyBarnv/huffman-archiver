@@ -24,13 +24,14 @@ func main() {
 	inPath, err := filepath.Abs(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
-	os.Exit(1)
+
 	outPath, err := filepath.Abs(outputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
-	os.Exit(1)
 
 	if inPath == outPath {
 		fmt.Fprintf(os.Stderr, "Error: Input and output files cannot be the same (%s)\n", inPath)
@@ -61,8 +62,8 @@ func main() {
 		out.Close()
 		os.Remove(outputFile)
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
-	os.Exit(1)
 
 	fmt.Println("Done.")
 }
