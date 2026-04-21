@@ -84,5 +84,9 @@ func Compress(input io.ReadSeeker, output io.Writer) error {
 		}
 	}
 
-	return writer.Flush()
+	if err := writer.Flush(); err != nil {
+		return err
+	}
+
+	return bufWriter.Flush()
 }
