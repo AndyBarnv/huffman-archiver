@@ -1,0 +1,13 @@
+File,Type,SizeBytes,RatioPct,CompSpeedMBs,CompStdMBs,DecompSpeedMBs,DecompStdMBs
+pseudo_zip_1kb.bin,compressed,1024,151.27,0.18,0.03,0.20,0.01
+rand_1kb.bin,random,1024,148.63,0.19,0.01,0.19,0.03
+text_1kb.txt,text,1024,57.13,0.20,0.01,0.20,0.01
+pseudo_zip_10kb.bin,compressed,10240,105.13,1.60,0.19,1.62,0.24
+rand_10kb.bin,random,10240,105.11,1.45,0.07,1.53,0.15
+text_10kb.txt,text,10240,49.43,1.66,0.12,1.76,0.10
+pseudo_zip_100kb.bin,compressed,102400,100.51,8.55,0.31,9.42,0.43
+rand_100kb.bin,random,102400,100.51,6.62,0.15,8.58,0.25
+text_100kb.txt,text,102400,48.67,9.80,0.50,13.36,0.59
+pseudo_zip_1024kb.bin,compressed,1048576,100.05,14.81,0.70,24.61,1.51
+rand_1024kb.bin,random,1048576,100.05,10.28,0.18,14.76,0.27
+text_1024kb.txt,text,1048576,48.59,21.82,0.33,45.73,1.24
