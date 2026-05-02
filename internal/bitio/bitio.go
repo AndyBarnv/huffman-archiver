@@ -60,6 +60,7 @@ type BitReader struct {
 	byte   byte
 	count  uint8
 	err    error
+	buf    [1]byte // буфер: выделяется 1 раз, чтобы не грузить сборщик мусора (GC)
 }
 
 // NewBitReader создает новый BitReader для указанного потока ввода.
@@ -76,12 +77,11 @@ func (br *BitReader) ReadBit() (bool, error) {
 
 	// Если текущий байт исчерпан, читаем следующий байт из потока
 	if br.count == 0 {
-		buf := make([]byte, 1)
-		_, br.err = br.reader.Read(buf)
+		_, br.err = br.reader.Read(br.buf[:])
 		if br.err != nil {
 			return false, br.err
 		}
-		br.byte = buf[0]
+		br.byte = br.buf[0]
 		br.count = 8
 	}
 
