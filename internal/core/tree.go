@@ -20,69 +20,69 @@ type Node struct {
 type PriorityQueue []*Node
 
 // Len возвращает количество элементов в очереди (требование интерфейса heap.Interface).
-func (pq PriorityQueue) Len() int { return len(pq) }
+func (queue PriorityQueue) Len() int { return len(queue) }
 
 // Less определяет порядок сортировки в куче (требование интерфейса heap.Interface).
 // Возвращает true, если элемент i должен быть "выше" элемента j (то есть его частота меньше).
-func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].Freq < pq[j].Freq
+func (queue PriorityQueue) Less(i, j int) bool {
+	return queue[i].Freq < queue[j].Freq
 }
 
 // Swap меняет местами два элемента в очереди (требование интерфейса heap.Interface).
-func (pq PriorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
+func (queue PriorityQueue) Swap(i, j int) {
+	queue[i], queue[j] = queue[j], queue[i]
 }
 
 // Push добавляет элемент в кучу (требование интерфейса heap.Interface).
-func (pq *PriorityQueue) Push(x interface{}) {
-	*pq = append(*pq, x.(*Node))
+func (queue *PriorityQueue) Push(x interface{}) {
+	*queue = append(*queue, x.(*Node))
 }
 
 // Pop извлекает элемент с минимальной частотой из кучи.
-func (pq *PriorityQueue) Pop() interface{} {
-	old := *pq
-	n := len(old)
-	item := old[n-1]
-	*pq = old[:n-1]
+func (queue *PriorityQueue) Pop() interface{} {
+	old := *queue
+	num := len(old)
+	item := old[num-1]
+	*queue = old[:num-1]
 	return item
 }
 
 // BuildTree строит дерево Хаффмана на основе карты частот символов.
 // Возвращает корень дерева или nil, если карта частот пуста.
 func BuildTree(freq map[byte]uint64) *Node {
-	pq := make(PriorityQueue, 0, len(freq))
-	heap.Init(&pq)
+	queue := make(PriorityQueue, 0, len(freq))
+	heap.Init(&queue)
 
 	// Создаем листовые узлы для каждого встретившегося символа и помещаем в кучу
 	for char, count := range freq {
-		heap.Push(&pq, &Node{Char: char, Freq: count})
+		heap.Push(&queue, &Node{Char: char, Freq: count})
 	}
 
-	if pq.Len() == 0 {
+	if queue.Len() == 0 {
 		return nil
 	}
 
 	// Крайний случай: файл состоит из одного уникального символа (например, "AAAA").
 	// Чтобы алгоритм мог его закодировать (дать код длиной хотя бы 1 бит),
 	// мы искусственно создаем корень и прячем символ в левое поддерево.
-	if pq.Len() == 1 {
-		node := heap.Pop(&pq).(*Node)
+	if queue.Len() == 1 {
+		node := heap.Pop(&queue).(*Node)
 		return &Node{Freq: node.Freq, Left: node}
 	}
 
 	// Основной цикл построения дерева:
 	// извлекаем два узла с наименьшими частотами, склеиваем их в новый узел
 	// и кладем обратно в кучу, пока не останется ровно один узел (корень).
-	for pq.Len() > 1 {
-		left := heap.Pop(&pq).(*Node)
-		right := heap.Pop(&pq).(*Node)
+	for queue.Len() > 1 {
+		left := heap.Pop(&queue).(*Node)
+		right := heap.Pop(&queue).(*Node)
 		parent := &Node{
 			Freq:  left.Freq + right.Freq,
 			Left:  left,
 			Right: right,
 		}
-		heap.Push(&pq, parent)
+		heap.Push(&queue, parent)
 	}
 
-	return heap.Pop(&pq).(*Node)
+	return heap.Pop(&queue).(*Node)
 }
